@@ -1,0 +1,124 @@
+<?php
+
+/**
+ * Provides a baseline for content during development.
+ */
+
+/**
+ * Build the development baseline.
+ */
+function baseline_dev_build() {
+  // Generate test content.
+  baseline_dev_generate_content();
+  // Generate test terms.
+  baseline_dev_generate_vocabularies();
+}
+
+/**
+ * Generates test content.
+ *
+ * By default 200 nodes of all types and all languages are generated.
+ * Modules can implement baseline_dev_generate_content_info_alter() for specific
+ * requirements.
+ */
+function baseline_dev_generate_content($generate_info = NULL) {
+  $generate_info = ($generate_info == NULL) ? baseline_dev_generate_content_info() : $generate_info;
+  module_load_include('inc', 'devel_generate', 'devel_generate');
+  foreach (language_list() as $key => $value) {
+    $languages[] = $key;
+  }
+  for ($i = 0; $i < $generate_info['num_nodes']; $i++) {
+    $node = new stdClass();
+    $node->nid = NULL;
+    $node->type = array_rand($generate_info['node_types']);
+    $users = $generate_info['users'];
+    $node->uid = $users[array_rand($users)];
+    $node->language = $languages[array_rand($languages)];
+    $type = node_type_get_type($node);
+    $node->title = $type->has_title ? devel_create_greeking(mt_rand(2, $generate_info['title_length']), TRUE) : '';
+    $node->revision = mt_rand(0,1);
+    $node->promote = mt_rand(0, 1);
+    $generate_info['time_range'] = isset($generate_info['time_range']) ? $generate_info['time_range'] : 0;
+    if (module_exists('sites')) {
+      $node->sites = array();
+    }
+    $node->created = REQUEST_TIME - mt_rand(0, $generate_info['time_range']);
+    // A flag to let hook_nodeapi() implementations know that this is a generated node.
+    $node->devel_generate = $generate_info;
+    // Populate all core fields on behalf of field.module.
+    module_load_include('inc', 'devel_generate', 'devel_generate.fields');
+    devel_generate_fields($node, 'node', $node->type);
+
+    node_save($node);
+  }
+}
+
+/**
+ * Generates test taxonomy terms.
+ *
+ * By default 50 terms are generated.
+ * Modules can implement baseline_dev_generate_taxonomy_info_alter() for specific
+ * requirements.
+ */
+function baseline_dev_generate_vocabularies($generate_info = NULL) {
+  $generate_info = ($generate_info == NULL) ? baseline_dev_generate_taxonomy_info() : $generate_info;
+  module_load_include('inc', 'devel_generate');
+  devel_generate_term_data($generate_info['vocabularies'], $generate_info['title_length'], $generate_info['number_of_terms'], $generate_info['delete_all_terms']);
+}
+
+/**
+ * Provides info for devel_generate().
+ *
+ * @return  Array
+ *   Info for devel_generate().
+ */
+function baseline_dev_generate_content_info() {
+  $node_types = drupal_map_assoc(array_keys(node_type_get_types()));
+  $default_config = array(
+    'node_types'      => $node_types,
+    'kill_content'    => 0,
+    'num_nodes'       => 200,
+    //'time_range'      => 604800,
+    'time_range'      => 144000000,
+    'max_comments'    => 0,
+    'title_length'    => 4,
+    'add_alias'       => 0,
+    'add_statistics'  => 1,
+    'add_language' => array (
+      'und' => 'und'
+    ),
+    'users' => array(
+      0 => 0,
+    )
+  );
+  drupal_alter('baseline_dev_generate_content_info', $default_config);
+  return $default_config;
+}
+
+/**
+ * Provides info for devel_generate().
+ *
+ * @return  Array
+ *   Info for devel_generate().
+ */
+function baseline_dev_generate_taxonomy_info() {
+  $vocabularies = taxonomy_get_vocabularies();
+  $default_config = array(
+    'vocabularies'      => $vocabularies,
+    'title_length'      => count($vocabularies) * 10,
+    'number_of_terms'   => 50,
+    'delete_all_terms'  => 1.
+  );
+
+  drupal_alter('baseline_dev_generate_taxonomy_info', $default_config);
+  return $default_config;
+}
+
+/**
+ * Disables development modules.
+ */
+function baseline_dev_disable_dev_modules($modules = NULL) {
+  $modules = ($modules != NULL) ? (array) $modules : array('context_ui', 'devel', 'devel_generate', 'field_ui', 'views_ui');
+  module_disable($modules);
+  drupal_set_message(t('Disable developer modules.'));
+}

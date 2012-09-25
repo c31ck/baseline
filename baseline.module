@@ -1,0 +1,170 @@
+<?php
+
+/**
+ * @file
+ * Provides a baseline for site building.
+ *
+ * @todo  remove coupling with i18n.
+ * @todo  provide hook/plugin architecture.
+ * @todo  add alias support.
+ * @todo  add menu links support.
+ */
+
+require_once 'baseline.build.inc';
+
+/**
+ * Builds the baseline.
+ *
+ * This invokes hooks that get all the baseline info and then builds a baseline
+ * with based on that info.
+ */
+function baseline_build() {
+  baseline_setup();
+  baseline_build_menus(baseline_get_info('menus'));
+  baseline_build_blocks(baseline_get_info('block'));
+  baseline_build_date_formats(baseline_get_info('date_formats'));
+  baseline_build_date_types(baseline_get_info('date_types'));
+  baseline_build_variables(baseline_get_info('variables'));
+  baseline_build_menu_links(baseline_get_info('menu_links'));
+}
+
+function baseline_api_create_block($block_info) {
+  $query = db_merge('block')
+          ->key(array('module' => $block_info['module'], 'delta' => $block_info['delta'], 'theme' => $block_info['theme']))
+          ->fields(array('module'   => $block_info['module'],
+                         'delta'    => $block_info['delta'],
+                         'theme'    => $block_info['theme'],
+                         'status'   => $block_info['status'],
+                         'weight'   => $block_info['weight'],
+                         'region'   => $block_info['region'],
+                         'title'    => $block_info['title'],
+                         'pages'    => $block_info['pages'],
+                         'cache'    => $block_info['cache']))
+          ->execute();
+}
+
+function baseline_api_create_custom_block($block_info) {
+  baseline_api_create_block($block_info);
+  db_merge('block_custom')
+          ->key(array('bid' => $block_info['delta']))
+          ->fields(array('bid'      => $block_info['delta'],
+                         'body'     => $block_info['body'],
+                         'info'     => $block_info['info'],
+                         'format'   => $block_info['format'],
+                  )
+          )
+          ->execute();
+}
+
+/**
+ * Calls baseline_setup hook implementations.
+ */
+function baseline_setup() {
+  $hook = 'baseline_setup';
+  foreach (module_implements($hook) as $module) {
+    module_invoke($module, $hook);
+  }
+}
+
+/**
+ * Creates a date format.
+ */
+function baseline_api_create_date_format($format) {
+   $query = db_merge('date_formats')
+              ->key(array('format' => $format['format']))
+              ->fields(array(
+                'format'    => $format['format'],
+                'type'      => 'custom',
+                'locked'    => 0))
+              ->execute();
+}
+
+/**
+ * Creates a date type.
+ */
+function baseline_api_create_date_type($type) {
+  $query = db_merge('date_format_type')
+             ->key(array('type' => $type['type']))
+              ->fields(array(
+                'type'    => $type['type'],
+                'title'   => $type['title'],
+                'locked'  => $type['locked'],
+              ))
+              ->execute();
+
+  $key = 'date_format_' . $type['type'];
+  variable_set($key, $type['format']);
+}
+
+/**
+ * Creates a menu link.
+ *
+ * A menu link is deemed existing based on its menu_name and its path. Existing
+ * menu links will be updated, others will be inserted.
+ *
+ * @param array $menu_link_info
+ *   Info about the menu link. Contains:
+ *   - menu_name
+ *   - link_title
+ *   - link_name
+ *   - weight
+ */
+function baseline_api_create_menu_link($menu_link_info) {
+  // Check if this menu link exists.
+  $menu_item = (array) baseline_api_menu_link_exists($menu_link_info['menu_name'], $menu_link_info['link_path']);
+  if (isset($menu_item['mlid'])) {
+    $menu_link_info['mlid'] = $menu_item['mlid'];
+  }
+  menu_link_save($menu_link_info, $menu_item);
+}
+
+/**
+ * Determines if a menu link exists.
+ *
+ * A menu link is deemed existing based on its menu_name and its path. Existing
+ * menu links will be updated, others will be inserted.
+ *
+ * @param  string $menu_name
+ *   Menu name.
+ * @param  string $path
+ *   Link path.
+ *
+ * @return  false|array
+ *   Array containing menu info if the menu link exists, FALSE otherwise.
+ */
+function baseline_api_menu_link_exists($menu_name, $path) {
+    $query = db_select('menu_links', 'ml');
+    $query->leftJoin('menu_router', 'm', 'm.path = ml.router_path');
+    $query->fields('ml');
+    // Weight should be taken from {menu_links}, not {menu_router}.
+    $query->addField('ml', 'weight', 'link_weight');
+    $query->fields('m');
+    $query->condition('ml.router_path', $path);
+    $query->condition('ml.menu_name', $menu_name);
+    if ($item = $query->execute()->fetchAssoc()) {
+      $item['weight'] = $item['link_weight'];
+      _menu_link_translate($item);
+      return $item;
+    }
+  return FALSE;
+}
+
+/**
+ * Gets info for a particular type of config.
+ *
+ * This will call a hook baseline_info_$type.
+ *
+ * @param  string $type
+ *   The type of info.
+ *
+ * @return array|false
+ *   An info array, or false if no hook implementations are available.
+ */
+function baseline_get_info($type) {
+  $hook = "baseline_info_$type";
+  $baseline_info = array();
+  foreach (module_implements($hook) as $module) {
+    $baseline_info += module_invoke($module, $hook);
+  }
+  return empty($baseline_info) ? FALSE : $baseline_info;
+}

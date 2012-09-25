@@ -1,0 +1,10 @@
+name = Baseline development
+description = Baseline during development.
+core = 7.x
+
+dependencies[] = context_ui
+dependencies[] = diff
+dependencies[] = devel
+dependencies[] = devel_generate
+dependencies[] = field_ui
+dependencies[] = views_ui

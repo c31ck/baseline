@@ -1,0 +1,3 @@
+name = Baseline
+description = Baseline builder
+core = 7.x

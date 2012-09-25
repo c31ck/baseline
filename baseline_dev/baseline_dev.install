@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * Baseline dev install functionality.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function baseline_dev_install() {
+  baseline_dev_build();
+}
