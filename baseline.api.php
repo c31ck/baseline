@@ -114,6 +114,9 @@ function hook_baseline_info_menus() {
  *   - link_path: A string for the path of the menu item.
  *   - link_title: The menu item title.
  *   - weight: An integer for the weight of the menu item inside the menu.
+ *   - parent: (optional) Info about the parent. Contains:
+ *     - menu_name: Name of the parent menu.
+ *     - path: Path of the parent.
  */
 function hook_baseline_info_menu_links() {
    return array(

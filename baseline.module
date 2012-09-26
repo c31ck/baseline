@@ -108,6 +108,9 @@ function baseline_api_create_date_type($type) {
  *   - link_title
  *   - link_name
  *   - weight
+ *   - parent: (optional) Info about the parent. Contains:
+ *     - menu_name: Name of the parent menu.
+ *     - path: Path of the parent.
  */
 function baseline_api_create_menu_link($menu_link_info) {
   // Check if this menu link exists.
