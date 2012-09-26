@@ -111,7 +111,14 @@ function baseline_api_create_date_type($type) {
  */
 function baseline_api_create_menu_link($menu_link_info) {
   // Check if this menu link exists.
-  $menu_item = (array) baseline_api_menu_link_exists($menu_link_info['menu_name'], $menu_link_info['link_path']);
+  $menu_item = (array) baseline_api_menu_link_get($menu_link_info['menu_name'], $menu_link_info['link_path']);
+  // Handle parents. A parent is identified by its menu name and path.
+  if (isset($menu_link_info['parent']['menu_name'], $menu_link_info['parent']['path'])) {
+    $parent_menu_item = baseline_api_menu_link_get($menu_link_info['parent']['menu_name'], $menu_link_info['parent']['path']);
+    if ($parent_menu_item) {
+      $menu_link_info['plid'] = $parent_menu_item['mlid'];
+    }
+  }
   if (isset($menu_item['mlid'])) {
     $menu_link_info['mlid'] = $menu_item['mlid'];
   }
@@ -119,10 +126,9 @@ function baseline_api_create_menu_link($menu_link_info) {
 }
 
 /**
- * Determines if a menu link exists.
+ * Loads a menu link.
  *
- * A menu link is deemed existing based on its menu_name and its path. Existing
- * menu links will be updated, others will be inserted.
+ * A menu link is identified based on its menu_name and its path.
  *
  * @param  string $menu_name
  *   Menu name.
@@ -132,7 +138,7 @@ function baseline_api_create_menu_link($menu_link_info) {
  * @return  false|array
  *   Array containing menu info if the menu link exists, FALSE otherwise.
  */
-function baseline_api_menu_link_exists($menu_name, $path) {
+function baseline_api_menu_link_get($menu_name, $path) {
     $query = db_select('menu_links', 'ml');
     $query->leftJoin('menu_router', 'm', 'm.path = ml.router_path');
     $query->fields('ml');
