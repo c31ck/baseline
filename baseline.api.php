@@ -6,9 +6,12 @@
  */
 
 /**
- * Implements hook_baseline_setup().
+ * Do basic site setup.
+ *
+ * This hook is called at the very beginning of the baseline build process. Use
+ * it to set up general configuration.
  */
-function mysitename_baseline_baseline_setup() {
+function hook_baseline_setup() {
   $theme = 'mysitename';
   $admin_theme = 'rubik';
   // Enable our main theme.
@@ -21,9 +24,13 @@ function mysitename_baseline_baseline_setup() {
 }
 
 /**
- * Implements hook_baseline_info_variables().
+ * Setup variables during installation.
+ *
+ * @return array
+ *   An associative array, each key being a variable name and the value being
+ *   the value to initialize the variable with.
  */
-function mysitename_baseline_baseline_info_variables() {
+function hook_baseline_info_variables() {
   return array(
     'user_register'             => USER_REGISTER_ADMINISTRATORS_ONLY,
     'site_name'                 => 'mysitename',
@@ -63,9 +70,18 @@ function mysitename_baseline_baseline_info_variables() {
 }
 
 /**
- * Implements mysitename_baseline_baseline_info_menus().
+ * Setup menus during installation.
+ *
+ * @return array
+ *   An array of menus to initialize the site with. Each menu array can contain
+ *   the following keys:
+ *   - title: A string to use for the menu title.
+ *   - menu_name: A string for the menu's machine name.
+ *   - description: (optional) A string describing the menu.
+ *   - language: (optional) A string defining the menu's language.
+ *   - i18n_mode: (optional) Integer for the mode this menu is localised in.
  */
-function mysitename_baseline_baseline_info_menus() {
+function hook_baseline_info_menus() {
   return array(
     array(
       'title'       => 'Service menu',
@@ -89,9 +105,17 @@ function mysitename_baseline_baseline_info_menus() {
 }
 
 /**
- * Implements hook_baseline_info_menu_links().
+ * Setup menu links during installation.
+ *
+ * @return array
+ *   An array containing associative arrays for each menu item. The menu item
+ *   arrays have the following structure:
+ *   - menu_name: The machine name of the menu the link belongs to.
+ *   - link_path: A string for the path of the menu item.
+ *   - link_title: The menu item title.
+ *   - weight: An integer for the weight of the menu item inside the menu.
  */
-function mysitename_baseline_baseline_info_menu_links() {
+function hook_baseline_info_menu_links() {
    return array(
     array(
       'menu_name' => 'main-menu',
@@ -103,9 +127,34 @@ function mysitename_baseline_baseline_info_menu_links() {
 }
 
 /**
- * Implements hook_baseline_info_blocks().
+ * Assign blocks to regions and create custom blocks during installation.
+ *
+ * @return array
+ *   An array of block arrays. Each block array can have the following keys:
+ *   - module: A string describing the module that defines the block.
+ *   - delta: The block delta.
+ *   - theme: The theme name of the theme this block is being configured for.
+ *   - status: A boolean integer for setting the block status.
+ *   - weight: An integer definign the order of the block in the region.
+ *   - region: (optional) The region to assign the block to.
+ *   - title: A string for the block title. Use <none> for no title.
+ *   - visibility: A constant for the visibility mode of the block. Can be one
+ *     of BLOCK_VISIBILITY_LISTED, BLOCK_VISIBILITY_NOTLISTED,
+ *     BLOCK_VISIBILITY_PHP
+ *   - pages: A String defining the visibiluty rules of the block.
+ *   - cache: The cache configuration of the block. Can be one of the following
+ *     constants: DRUPAL_CACHE_PER_ROLE, DRUPAL_CACHE_PER_USER,
+ *     DRUPAL_CACHE_PER_PAGE, DRUPAL_CACHE_GLOBAL, DRUPAL_NO_CACHE.
+ *   - body: (optional) A string containing the block body for custom blocks.
+ *   - info: (optional) A string used for the human readable name of the block,
+ *     used in the administrative interface.
+ *   - format: (optional) A string used for the machine name of the format the
+ *     block body is using.
+ *   - custom: (optional) Set to TRUE for a custom block.
+ *
+ * @see hook_block_info().
  */
-function mysitename_baseline_baseline_info_blocks() {
+function hook_baseline_info_blocks() {
   $theme = 'mysitename';
   $admin_theme = 'rubik';
 
@@ -218,9 +267,14 @@ function mysitename_baseline_baseline_info_blocks() {
 }
 
 /**
- * Implements hook_baseline_info_date_formats().
+ * Define date formats during installation.
+ *
+ * @return array
+ *   An array of date format arrays. Each date format can have the following
+ *   keys:
+ *   - format: A string with the date format. See the php date() function.
  */
-function mysitename_baseline_baseline_info_date_formats() {
+function hook_baseline_info_date_formats() {
   return array(
     // Monday 29/03/1980
     array(
@@ -234,9 +288,18 @@ function mysitename_baseline_baseline_info_date_formats() {
 }
 
 /**
- * Implements hook_baseline_info_date_types().
+ * Define date types.
+ *
+ * @return array
+ *   An array containing date type arrays. Each date type has the following
+ *   structure:
+ *   - type: The machine name of the date type.
+ *   - title: The human readable name of the date type.
+ *   - locked: A string that can be 0 to keep the date type editable or 1 to
+ *     lock it.
+ *   - format: The date type's format as used in the PHP date() function.
  */
-function mysitename_baseline_baseline_info_date_types() {
+function hook_baseline_info_date_types() {
   return array(
     // Monday 29/03/1980
     array(
