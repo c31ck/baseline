@@ -8,7 +8,7 @@
 /**
  * Implements hook_baseline_setup().
  */
-function hook_baseline_baseline_setup() {
+function hook_baseline_setup() {
   $theme = 'mysitename';
   $admin_theme = 'rubik';
   // Enable our main theme.
@@ -23,7 +23,7 @@ function hook_baseline_baseline_setup() {
 /**
  * Implements hook_baseline_info_variables().
  */
-function hook_baseline_baseline_info_variables() {
+function hook_baseline_info_variables() {
   return array(
     'user_register'             => USER_REGISTER_ADMINISTRATORS_ONLY,
     'site_name'                 => 'mysitename',
@@ -65,7 +65,7 @@ function hook_baseline_baseline_info_variables() {
 /**
  * Implements hook_baseline_baseline_info_menus().
  */
-function hook_baseline_baseline_info_menus() {
+function hook_baseline_info_menus() {
   return array(
     array(
       'title'       => 'Service menu',
@@ -91,7 +91,7 @@ function hook_baseline_baseline_info_menus() {
 /**
  * Implements hook_baseline_info_menu_links().
  */
-function hook_baseline_baseline_info_menu_links() {
+function hook_baseline_info_menu_links() {
    return array(
     array(
       'menu_name' => 'main-menu',
@@ -105,7 +105,7 @@ function hook_baseline_baseline_info_menu_links() {
 /**
  * Implements hook_baseline_info_blocks().
  */
-function hook_baseline_baseline_info_blocks() {
+function hook_baseline_info_blocks() {
   $theme = 'mysitename';
   $admin_theme = 'rubik';
 
@@ -220,7 +220,7 @@ function hook_baseline_baseline_info_blocks() {
 /**
  * Implements hook_baseline_info_date_formats().
  */
-function hook_baseline_baseline_info_date_formats() {
+function hook_baseline_info_date_formats() {
   return array(
     // Monday 29/03/1980
     array(
@@ -236,7 +236,7 @@ function hook_baseline_baseline_info_date_formats() {
 /**
  * Implements hook_baseline_info_date_types().
  */
-function hook_baseline_baseline_info_date_types() {
+function hook_baseline_info_date_types() {
   return array(
     // Monday 29/03/1980
     array(
