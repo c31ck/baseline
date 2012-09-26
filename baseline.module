@@ -154,11 +154,11 @@ function baseline_api_menu_link_exists($menu_name, $path) {
  *
  * This will call a hook baseline_info_$type.
  *
- * @param  string $type
+ * @param string $type
  *   The type of info.
  *
- * @return array|false
- *   An info array, or false if no hook implementations are available.
+ * @return array
+ *   An info array. If no implementations were found the array will be empty.
  */
 function baseline_get_info($type) {
   $hook = "baseline_info_$type";
@@ -166,5 +166,5 @@ function baseline_get_info($type) {
   foreach (module_implements($hook) as $module) {
     $baseline_info += module_invoke($module, $hook);
   }
-  return empty($baseline_info) ? FALSE : $baseline_info;
+  return $baseline_info;
 }
