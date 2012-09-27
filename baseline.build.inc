@@ -93,6 +93,32 @@ function baseline_build_variables($variables) {
 }
 
 /**
+ * Creates user roles.
+ *
+ * This will create a variable 'baseline_user_role_ids' containing an array
+ * mapping the keys of the roles passed to this funtion to the generated role
+ * ids.
+ *
+ * @param array $roles
+ *   An array of user roles to create.
+ *
+ * @see hook_baseline_info_user_roles().
+ */
+function baseline_build_user_roles($roles) {
+  // Save the role ids so we can save them to a variable.
+  $role_id_mapping = array();
+  foreach ($roles as $role_name => $role) {
+    $role = (object) $role;
+    // Save the role to the database.
+    user_role_save($role);
+    $role_id_mapping[$role_name] = $role->rid;
+  }
+  // Set the variable for being able to access the role ids generated for the
+  // roles later in the build process.
+  variable_set('baseline_user_role_ids', $role_id_mapping);
+}
+
+/**
  * Assigns user permissions to roles.
  *
  * @param array $roles

@@ -322,6 +322,28 @@ function hook_baseline_info_date_types() {
 }
 
 /**
+ * Define user roles.
+ *
+ * @return array
+ *   An array of user roles, keyed by machine name. Each user role is an array
+ *   with the following keys:
+ *   - name: The unique name of the role.
+ *   - weight: An integer for the weight of the role.
+ */
+function hook_baseline_info_user_roles() {
+  return array(
+    'administrator' => array(
+      'name' => 'administrator',
+      'weight' => 2,
+    ),
+    'webmaster' => array(
+      'name' => 'webmaster',
+      'weight' => 5,
+    ),
+  );
+}
+
+/**
  * Define allowed permissions for roles.
  *
  * This hook runs after hook_info_user_roles(), enabling you to assign
