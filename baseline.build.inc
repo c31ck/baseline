@@ -91,3 +91,25 @@ function baseline_build_variables($variables) {
     variable_set($name, $value);
   }
 }
+
+/**
+ * Assigns user permissions to roles.
+ *
+ * @param array $roles
+ *   For each role an array of permissions to assign to that role. The array
+ *   is keyed by role id or machine name.
+ *
+ * @see hook_baseline_info_user_permissions()
+ */
+function baseline_build_user_permissions($roles) {
+  // Fetch the role ids set up by hook_baseline_info_user_permissions().
+  $role_ids = variable_get('baseline_user_role_ids', array());
+  foreach ($roles as $rid => $permissions) {
+    // Find out the role id if a machine name was used.
+    if (!is_numeric($rid) && isset($role_ids[$rid])) {
+      $rid = $role_ids[$rid];
+    }
+    // Save the permissions for this role..
+    user_role_grant_permissions($rid, $permissions);
+  }
+}

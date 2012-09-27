@@ -26,6 +26,7 @@ function baseline_build() {
   baseline_build_date_types(baseline_get_info('date_types'));
   baseline_build_variables(baseline_get_info('variables'));
   baseline_build_menu_links(baseline_get_info('menu_links'));
+  baseline_build_user_permissions(baseline_get_info('user_permissions'));
 }
 
 function baseline_api_create_block($block_info) {

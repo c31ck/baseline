@@ -320,3 +320,42 @@ function hook_baseline_info_date_types() {
     ),
   );
 }
+
+/**
+ * Define allowed permissions for roles.
+ *
+ * This hook runs after hook_info_user_roles(), enabling you to assign
+ * permissions to roles defined in that hook.
+ *
+ * @return array
+ *   An array for each role you want to assign permissions to. The key for each
+ *   role can be one of the following:
+ *   - A string for the machine name as defined in hook_info_user_roles().
+ *   - An integer for the role ID.
+ *   - A constant for drupal's predefined roles:
+ *     - DRUPAL_ANONYMOUS_RID: The anonymous role.
+ *     - DRUPAL_AUTHENTICATED_RID: The authenticated user role.
+ *
+ * @see baseline_build_user_permissions().
+ */
+function hook_baseline_info_user_permissions() {
+  $permissions = array();
+  // Add permissions for the administrator role.
+  $permissions['administrator'] = array(
+    'access configuration and structure pages',
+    'access publishing options for content',
+    'access content overview',
+    'access content',
+    'bypass node access',
+    'view own unpublished content',
+    'view revisions',
+  );
+  // Add permissions for the anonymous user role.
+  $permissions[DRUPAL_ANONYMOUS_RID] = array(
+    'access content',
+  );
+  // Add the same permissions for the authenticated user role.
+  $permissions[DRUPAL_AUTHENTICATED_RID] = $permissions[DRUPAL_ANONYMOUS_RID];
+
+  return $permissions;
+}

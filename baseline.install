@@ -1,0 +1,14 @@
+<?php
+
+/*
+ * @file
+ * Baseline installation and update routines.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function baseline_uninstall() {
+  // Remove the role id cache.
+  variable_del('baseline_user_role_ids');
+}
