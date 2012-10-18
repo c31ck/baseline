@@ -24,6 +24,17 @@ function hook_baseline_setup() {
 }
 
 /**
+ * Finish site setup.
+ *
+ * Use this hook for things that need to be done after everything else.
+ */
+function hook_baseline_finish() {
+  $user_roles = array_flip(user_roles());
+  $rid = $user_roles['administrator'];
+  variable_set('user_admin_role', $rid);
+}
+
+/**
  * Setup variables during installation.
  *
  * @return array
@@ -36,7 +47,7 @@ function hook_baseline_info_variables() {
     'site_name'                 => 'mysitename',
     'site_slogan'               => 'Myslogan.',
     'node_admin_theme'          => 1,
-    'theme_mysitename_settings'  => array (
+    'theme_mysitename_settings' => array(
       'toggle_logo' => 1,
       'toggle_name' => 0,
       'toggle_slogan' => 1,
@@ -58,13 +69,42 @@ function hook_baseline_info_variables() {
       'zen_breadcrumb_title' => 1,
       'zen_skip_link_anchor' => 'main-menu',
       'zen_skip_link_text' => 'Jump to navigation',
-      'zen_html5_respond_meta' => array (
+      'zen_html5_respond_meta' => array(
         'respond' => 'respond',
         'html5' => 'html5',
         'meta' => 'meta',
       ),
       'zen_rebuild_registry' => 1,
       'zen_wireframes' => 0,
+    )
+  );
+}
+
+/**
+ * Creates simple nodes during installation.
+ *
+ * @return array
+ *  An array of nodes to initialize the site with. Each node array can contain
+ *  the following keys:
+ *  - nid: incrementing value along the array. The nid is used for updates
+ *    and can be used in menu links.
+ *  - title: A string to user for the node title.
+ *  - type: the node type.
+ *  - language: A string defining the node's language.
+ */
+function hook_baseline_info_nodes() {
+  return array(
+    array(
+      'nid' => '1',
+      'title' => 'About us',
+      'type' => 'page',
+      'language' => 'en',
+    ),
+    array(
+      'nid' => '2',
+      'title' => 'Title of the seconde node',
+      'type' => 'page',
+      'language' => 'nl',
     )
   );
 }
@@ -88,8 +128,6 @@ function hook_baseline_info_menus() {
       'menu_name'   => 'menu-service',
       'description' => 'The <em>Service</em> menu contains a short list of links and is normally shown at the top of the page and in the footer.',
       'language'    => LANGUAGE_NONE,
-      // Translate and localize.
-      // @todo i18n module probably provides a constant for this.
       'i18n_mode'   => 5,
     ),
     array(
@@ -97,8 +135,6 @@ function hook_baseline_info_menus() {
       'menu_name'   => 'main-menu',
       'description' => 'The <em>Main</em> menu is used on many sites to show the major sections of the site, often in a top navigation bar.',
       'language'    => LANGUAGE_NONE,
-      // Translate and localize.
-      // @todo i18n module probably provides a constant for this.
       'i18n_mode'   => 5,
     ),
   );
@@ -114,12 +150,14 @@ function hook_baseline_info_menus() {
  *   - link_path: A string for the path of the menu item.
  *   - link_title: The menu item title.
  *   - weight: An integer for the weight of the menu item inside the menu.
+ *   - options: (optional) An array of options, see l() for more.
+ *   - router_path: (optional) The path of the relevant router item (new link)
  *   - parent: (optional) Info about the parent. Contains:
  *     - menu_name: Name of the parent menu.
  *     - path: Path of the parent.
  */
 function hook_baseline_info_menu_links() {
-   return array(
+  return array(
     array(
       'menu_name' => 'main-menu',
       'link_path' => 'news',
@@ -169,7 +207,7 @@ function hook_baseline_info_blocks() {
       'status' => 1,
       'weight' => 0,
       'region' => 'header_top',
-      'title'  => '<none>',
+      'title' => '<none>',
       'pages' => '',
       'cache' => -1,
     ),
@@ -180,7 +218,7 @@ function hook_baseline_info_blocks() {
       'status' => 1,
       'weight' => 1,
       'region' => 'header_top',
-      'title'  => '<none>',
+      'title' => '<none>',
       'pages' => '',
       'cache' => -1,
     ),
@@ -191,7 +229,7 @@ function hook_baseline_info_blocks() {
       'status' => 1,
       'weight' => 1,
       'region' => 'header',
-      'title'  => '<none>',
+      'title' => '<none>',
       'pages' => '',
       'cache' => -1,
     ),
@@ -202,7 +240,7 @@ function hook_baseline_info_blocks() {
       'status' => 0,
       'weight' => 1,
       'region' => '-1',
-      'title'  => '<none>',
+      'title' => '<none>',
       'pages' => '',
       'cache' => -1,
     ),
@@ -213,7 +251,7 @@ function hook_baseline_info_blocks() {
       'status' => 0,
       'weight' => 1,
       'region' => '-1',
-      'title'  => '<none>',
+      'title' => '<none>',
       'pages' => '',
       'cache' => -1,
     ),
@@ -224,7 +262,7 @@ function hook_baseline_info_blocks() {
       'status' => 0,
       'weight' => 1,
       'region' => '-1',
-      'title'  => '<none>',
+      'title' => '<none>',
       'pages' => '',
       'cache' => -1,
     ),
@@ -235,7 +273,7 @@ function hook_baseline_info_blocks() {
       'status' => 0,
       'weight' => 1,
       'region' => '-1',
-      'title'  => '<none>',
+      'title' => '<none>',
       'pages' => '',
       'cache' => -1,
     ),
@@ -246,25 +284,25 @@ function hook_baseline_info_blocks() {
       'status' => 1,
       'weight' => 10,
       'region' => 'sidebar_first',
-      'title'  => 'Follow mysitename',
+      'title' => 'Follow mysitename',
       'pages' => '',
       'cache' => -1,
     ),
     // Custom blocks
     array(
-      'module'  => 'block',
-      'delta'   => 1,
-      'theme'   => $theme,
-      'status'  => 1,
-      'weight'  => 1,
-      'region'  => 'sidebar_first',
-      'title'   => 'Search our supplier index.',
-      'pages'   => '',
-      'cache'   => -1,
-      'body'    => 'Search our supplier index. <a href="#" class="button">Search index</a>',
-      'info'    => 'Search our supplier index.',
-      'format'  => 'filtered_html',
-      'custom'  => TRUE,
+      'module' => 'block',
+      'delta' => 1,
+      'theme' => $theme,
+      'status' => 1,
+      'weight' => 1,
+      'region' => 'sidebar_first',
+      'title' => 'Search our supplier index.',
+      'pages' => '',
+      'cache' => -1,
+      'body' => 'Search our supplier index. <a href="#" class="button">Search index</a>',
+      'info' => 'Search our supplier index.',
+      'format' => 'filtered_html',
+      'custom' => TRUE,
     ),
   );
 }
@@ -285,7 +323,7 @@ function hook_baseline_info_date_formats() {
     ),
     // Monday 29/03/1980 20:50
     array(
-      'format' => 'l d/m/Y - G:s',
+      'format' => 'l d/m/Y - G:i',
     )
   );
 }
@@ -309,36 +347,14 @@ function hook_baseline_info_date_types() {
       'type'    => 'day',
       'title'   => 'Day',
       'locked'  => '0',
-      'format' => 'l d/m/Y',
+      'format'  => 'l d/m/Y',
     ),
     // Monday 29/03/1980 20:50
     array(
       'type'    => 'day_hour',
       'title'   => 'Day and hour',
       'locked'  => '0',
-      'format' => 'l d/m/Y - G:s',
-    ),
-  );
-}
-
-/**
- * Define user roles.
- *
- * @return array
- *   An array of user roles, keyed by machine name. Each user role is an array
- *   with the following keys:
- *   - name: The unique name of the role.
- *   - weight: An integer for the weight of the role.
- */
-function hook_baseline_info_user_roles() {
-  return array(
-    'administrator' => array(
-      'name' => 'administrator',
-      'weight' => 2,
-    ),
-    'webmaster' => array(
-      'name' => 'webmaster',
-      'weight' => 5,
+      'format'  => 'l d/m/Y - G:i',
     ),
   );
 }
@@ -380,4 +396,26 @@ function hook_baseline_info_user_permissions() {
   $permissions[DRUPAL_AUTHENTICATED_RID] = $permissions[DRUPAL_ANONYMOUS_RID];
 
   return $permissions;
+}
+
+/**
+ * Define user roles.
+ *
+ * @return array
+ *   An array of user roles, keyed by machine name. Each user role is an array
+ *   with the following keys:
+ *   - name: The unique name of the role.
+ *   - weight: An integer for the weight of the role.
+ */
+function hook_baseline_info_user_roles() {
+  return array(
+    'administrator' => array(
+      'name' => 'administrator',
+      'weight' => 2,
+    ),
+    'webmaster' => array(
+      'name' => 'webmaster',
+      'weight' => 5,
+    ),
+  );
 }

@@ -7,55 +7,98 @@
  * @todo  remove coupling with i18n.
  * @todo  provide hook/plugin architecture.
  * @todo  add alias support.
- * @todo  add menu links support.
  */
-
 require_once 'baseline.build.inc';
 
 /**
  * Builds the baseline.
  *
  * This invokes hooks that get all the baseline info and then builds a baseline
- * with based on that info.
+ * based on that info.
  */
 function baseline_build() {
   baseline_setup();
-  baseline_build_menus(baseline_get_info('menus'));
-  baseline_build_blocks(baseline_get_info('block'));
+  baseline_build_aliases(baseline_get_info('aliases'));
+  baseline_build_blocks(baseline_get_info('blocks'));
   baseline_build_date_formats(baseline_get_info('date_formats'));
   baseline_build_date_types(baseline_get_info('date_types'));
   baseline_build_variables(baseline_get_info('variables'));
+  baseline_build_nodes(baseline_get_info('nodes'));
+  baseline_build_menus(baseline_get_info('menus'));
   baseline_build_menu_links(baseline_get_info('menu_links'));
   baseline_build_user_roles(baseline_get_info('user_roles'));
   baseline_build_user_permissions(baseline_get_info('user_permissions'));
+  baseline_finish();
 }
 
+/**
+ * Creates or updates a path alias.
+ *
+ * @param string $source
+ *   Path source.
+ * @param string $alias
+ *   Path alias.
+ * @param string $langcode
+ *   Language code.
+ */
+function baseline_api_create_path_alias($source, $alias, $langcode) {
+  // Check if an alias is already provided for this source and langcode
+  // combination.
+  $existing_alias = path_load(array('source' => $source, 'language' => $langcode));
+  $alias = array('source' => $source, 'alias' => $alias, 'language' => $langcode);
+  if ($existing_alias !== FALSE) {
+    $alias['pid'] = $existing_alias['pid'];
+  }
+  path_save($alias);
+}
+
+
+/**
+ * Creates a block.
+ *
+ * @param array $block_info
+ *   Block properties.
+ */
 function baseline_api_create_block($block_info) {
+  $fields = array(
+    'module'  => $block_info['module'],
+    'delta'   => $block_info['delta'],
+    'theme'   => $block_info['theme'],
+    'status'  => $block_info['status'],
+    'weight'  => $block_info['weight'],
+    'region'  => $block_info['region'],
+    'title'   => $block_info['title'],
+    'pages'   => $block_info['pages'],
+    'cache'   => $block_info['cache'],
+  );
+
+  if (module_exists('i18n_block') && isset($block_info['i18n_mode'])) {
+    $fields['i18n_mode'] = $block_info['i18n_mode'];
+  }
+
   $query = db_merge('block')
-          ->key(array('module' => $block_info['module'], 'delta' => $block_info['delta'], 'theme' => $block_info['theme']))
-          ->fields(array('module'   => $block_info['module'],
-                         'delta'    => $block_info['delta'],
-                         'theme'    => $block_info['theme'],
-                         'status'   => $block_info['status'],
-                         'weight'   => $block_info['weight'],
-                         'region'   => $block_info['region'],
-                         'title'    => $block_info['title'],
-                         'pages'    => $block_info['pages'],
-                         'cache'    => $block_info['cache']))
-          ->execute();
+    ->key(array('module' => $block_info['module'], 'delta' => $block_info['delta'], 'theme' => $block_info['theme']))
+    ->fields($fields)
+    ->execute();
 }
 
+/**
+ * Creates a custom block.
+ *
+ * @param array $block_info
+ *   Block properties.
+ */
 function baseline_api_create_custom_block($block_info) {
   baseline_api_create_block($block_info);
   db_merge('block_custom')
-          ->key(array('bid' => $block_info['delta']))
-          ->fields(array('bid'      => $block_info['delta'],
-                         'body'     => $block_info['body'],
-                         'info'     => $block_info['info'],
-                         'format'   => $block_info['format'],
-                  )
-          )
-          ->execute();
+    ->key(array('bid' => $block_info['delta']))
+    ->fields(array('bid' => $block_info['delta'],
+      'body' => $block_info['body'],
+      'info' => $block_info['info'],
+      'format' => $block_info['format'],
+      )
+    )
+    ->execute();
 }
 
 /**
@@ -69,16 +112,26 @@ function baseline_setup() {
 }
 
 /**
+ * Calls baseline_finish hook implementations.
+ */
+function baseline_finish() {
+  $hook = 'baseline_finish';
+  foreach (module_implements($hook) as $module) {
+    module_invoke($module, $hook);
+  }
+}
+
+/**
  * Creates a date format.
  */
 function baseline_api_create_date_format($format) {
-   $query = db_merge('date_formats')
-              ->key(array('format' => $format['format']))
-              ->fields(array(
-                'format'    => $format['format'],
-                'type'      => 'custom',
-                'locked'    => 0))
-              ->execute();
+  $query = db_merge('date_formats')
+    ->key(array('format' => $format['format']))
+    ->fields(array(
+      'format' => $format['format'],
+      'type' => 'custom',
+      'locked' => 0))
+    ->execute();
 }
 
 /**
@@ -86,16 +139,45 @@ function baseline_api_create_date_format($format) {
  */
 function baseline_api_create_date_type($type) {
   $query = db_merge('date_format_type')
-             ->key(array('type' => $type['type']))
-              ->fields(array(
-                'type'    => $type['type'],
-                'title'   => $type['title'],
-                'locked'  => $type['locked'],
-              ))
-              ->execute();
+    ->key(array('type' => $type['type']))
+    ->fields(array(
+      'type' => $type['type'],
+      'title' => $type['title'],
+      'locked' => $type['locked'],
+    ))
+    ->execute();
 
   $key = 'date_format_' . $type['type'];
   variable_set($key, $type['format']);
+}
+
+/**
+ * Creates a basic node.
+ *
+ * @param array $node
+ *   Array containing node information:
+ *     - nid
+ *     - title
+ *     - type
+ *     - language
+ */
+function baseline_api_create_node($node) {
+  $exists = node_load($node['nid']);
+  $new_node = new stdClass();
+  if ($exists !== FALSE) {
+    $new_node->nid = $node['nid'];
+  }
+  $new_node->title = $node['title'];
+  $new_node->type = $node['type'];
+  $new_node->language = $node['language'];
+  $new_node->created = time();
+  $new_node->changed = time();
+  $new_node->uid = 1;
+  $new_node->comment = 0;
+  $new_node->status = 1;
+  $new_node->sticky = 0;
+  node_object_prepare($new_node);
+  node_save($new_node);
 }
 
 /**
@@ -110,16 +192,24 @@ function baseline_api_create_date_type($type) {
  *   - link_title
  *   - link_name
  *   - weight
+ *   - new
+ *   - options: (optional) An array of options, see l() for more.
+ *   - router_path: (optional) The path of the relevant router item (new link)
  *   - parent: (optional) Info about the parent. Contains:
  *     - menu_name: Name of the parent menu.
  *     - path: Path of the parent.
  */
 function baseline_api_create_menu_link($menu_link_info) {
-  // Check if this menu link exists.
-  $menu_item = (array) baseline_api_menu_link_get($menu_link_info['menu_name'], $menu_link_info['link_path']);
-  // Handle parents. A parent is identified by its menu name and path.
+  // If strict checking is enabled, we also use the link_title to determine if
+  // a menu link exists or not. If strict checking is disabled only the menu and
+  // link path are used to determine whether a menu link exists or not.
+  $link_title = (bool) isset($menu_link_info['strict']) ? $menu_link_info['link_title'] : NULL;
+  $menu_item = (array) baseline_api_menu_link_get($menu_link_info['menu_name'], $menu_link_info['link_path'], $menu_link_info['link_title']);
+  // Handle parents. A parent is identified by its menu name and path and
+  // optionally the link title.
   if (isset($menu_link_info['parent']['menu_name'], $menu_link_info['parent']['path'])) {
-    $parent_menu_item = baseline_api_menu_link_get($menu_link_info['parent']['menu_name'], $menu_link_info['parent']['path']);
+    $parent_link_title = (isset($menu_link_info['parent']['link_title'])) ? $menu_link_info['parent']['link_title'] : NULL;
+    $parent_menu_item = baseline_api_menu_link_get($menu_link_info['parent']['menu_name'], $menu_link_info['parent']['path'], $parent_link_title);
     if ($parent_menu_item) {
       $menu_link_info['plid'] = $parent_menu_item['mlid'];
     }
@@ -127,7 +217,24 @@ function baseline_api_create_menu_link($menu_link_info) {
   if (isset($menu_item['mlid'])) {
     $menu_link_info['mlid'] = $menu_item['mlid'];
   }
-  menu_link_save($menu_link_info, $menu_item);
+  $mlid = menu_link_save($menu_link_info, $menu_item);
+
+  // If we're creating menu links in an installation context, such as during an
+  // install profile, menu_rebuild() will get called on first page load, which
+  // in turn calls _menu_navigation_links_rebuild(). This will remove our menu
+  // items because they are considered stale. We work around this by flagging
+  // them customized so that _menu_navigation_links_rebuild() will not delete
+  // them.
+  // @todo there has to be a better way to fix this. Also: why are these links
+  // considered stale?
+  if ($mlid) {
+    db_update('menu_links')
+    ->fields(array(
+    'customized' => 1,
+    ))
+    ->condition('mlid', $mlid)
+    ->execute();
+  }
 }
 
 /**
@@ -143,20 +250,22 @@ function baseline_api_create_menu_link($menu_link_info) {
  * @return  false|array
  *   Array containing menu info if the menu link exists, FALSE otherwise.
  */
-function baseline_api_menu_link_get($menu_name, $path) {
-    $query = db_select('menu_links', 'ml');
-    $query->leftJoin('menu_router', 'm', 'm.path = ml.router_path');
-    $query->fields('ml');
-    // Weight should be taken from {menu_links}, not {menu_router}.
-    $query->addField('ml', 'weight', 'link_weight');
-    $query->fields('m');
-    $query->condition('ml.router_path', $path);
-    $query->condition('ml.menu_name', $menu_name);
-    if ($item = $query->execute()->fetchAssoc()) {
-      $item['weight'] = $item['link_weight'];
-      _menu_link_translate($item);
-      return $item;
-    }
+function baseline_api_menu_link_get($menu_name, $path, $link_title = NULL) {
+  $query = db_select('menu_links', 'ml');
+  $query->leftJoin('menu_router', 'm', 'm.path = ml.router_path');
+  $query->fields('ml');
+  $query->addField('ml', 'weight', 'link_weight');
+  $query->fields('m');
+  $query->condition('ml.link_path', $path);
+  $query->condition('ml.menu_name', $menu_name);
+  if ($link_title) {
+    $query->condition('ml.link_title', $link_title);
+  }
+  if ($item = $query->execute()->fetchAssoc()) {
+    $item['weight'] = $item['link_weight'];
+    _menu_link_translate($item);
+    return $item;
+  }
   return FALSE;
 }
 

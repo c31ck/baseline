@@ -6,6 +6,20 @@
  */
 
 /**
+ * Creates aliases
+ *
+ * @param array $alias_info
+ *  Array containing alias info.
+ */
+function baseline_build_aliases($alias_info) {
+  foreach ($alias_info as $source => $alias_language_info) {
+    foreach ($alias_language_info as $langcode => $alias) {
+      baseline_api_create_path_alias($source, $alias, $langcode);
+    }
+  }
+}
+
+/**
  * Creates blocks.
  *
  * @param array $blocks_info
@@ -20,6 +34,18 @@ function baseline_build_blocks($blocks_info) {
     else {
       baseline_api_create_block($block_info);
     }
+  }
+}
+
+/**
+ * Creates nodes.
+ *
+ * @param array $nodes
+ *   Nodes info.
+ */
+function baseline_build_nodes($nodes) {
+  foreach ($nodes as $node) {
+    baseline_api_create_node($node);
   }
 }
 
