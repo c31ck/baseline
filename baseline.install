@@ -1,9 +1,16 @@
 <?php
 
-/*
+/**
  * @file
  * Baseline installation and update routines.
  */
+
+/**
+ * Implements hook_install().
+ */
+function baseline_install() {
+  baseline_build();
+}
 
 /**
  * Implements hook_uninstall().
