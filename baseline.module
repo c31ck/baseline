@@ -28,6 +28,7 @@ function baseline_build() {
   baseline_build_menu_links(baseline_get_info('menu_links'));
   baseline_build_user_roles(baseline_get_info('user_roles'));
   baseline_build_user_permissions(baseline_get_info('user_permissions'));
+  baseline_build_nodequeues(baseline_get_info('nodequeues'));
   baseline_finish();
 }
 
