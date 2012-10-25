@@ -139,3 +139,16 @@ function baseline_build_user_permissions($roles) {
     user_role_grant_permissions($rid, $permissions);
   }
 }
+
+/**
+ * Create nodequeues.
+ *
+ * @param array $nodeqeueus
+ *   An array of nodeqeues, keyed by machine name.
+ */
+function baseline_build_nodequeues($nodequeues) {
+  foreach ($nodequeues as $nodequeue) {
+    $nodequeue_object = (object) $nodequeue;
+    $qid = nodequeue_save($nodequeue_object);
+  }
+}

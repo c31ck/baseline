@@ -381,3 +381,50 @@ function hook_baseline_info_user_permissions() {
 
   return $permissions;
 }
+
+/**
+ * Define nodequeues.
+ *
+ * @return array
+ *   An array of nodequeues, keyed by machine name.
+ */
+function hook_baseline_info_nodequeues() {
+  $nodequeues = array(
+    'residential_teaser' => array(
+      'title' => st('residential_teaser'),
+      'name' => 'residential_teaser',
+      'subqueue_title' => st('residential_teaser'),
+      'size' => 0,
+      'reverse' => 0,
+      'link' => '',
+      'link_remove' => '',
+      'roles' => array(),
+      'types' => array(0 => 'banner'),
+      'i18n' => 0,
+      'owner' => 'nodequeue',
+      'show_in_links' => FALSE,
+      'show_in_tab' => TRUE,
+      'show_in_ui' => TRUE,
+      'add_subqueue' => array(0 => st('residential_teaser')),
+    ),
+    'residential_full' => array(
+      'title' => st('residential_full'),
+      'name' => 'residential_full',
+      'subqueue_title' => st('residential_full'),
+      'size' => 0,
+      'reverse' => 0,
+      'link' => '',
+      'link_remove' => '',
+      'roles' => array(),
+      'types' => array(0 => 'banner'),
+      'i18n' => 0,
+      'owner' => 'nodequeue',
+      'show_in_links' => FALSE,
+      'show_in_tab' => TRUE,
+      'show_in_ui' => TRUE,
+      'add_subqueue' => array(0 => st('residential_full')),
+    ),
+  );
+
+  return $nodequeues;
+}
