@@ -161,6 +161,7 @@ function baseline_api_create_date_type($type) {
  *     - title
  *     - type
  *     - language
+ *     - array fields
  */
 function baseline_api_create_node($node) {
   $exists = node_load($node['nid']);
@@ -177,6 +178,23 @@ function baseline_api_create_node($node) {
   $new_node->comment = 0;
   $new_node->status = 1;
   $new_node->sticky = 0;
+
+  // Add fields
+  if (!empty($node['fields'])) {
+    foreach ($node['fields'] as $field => $values) {
+      // language
+      foreach ($values as $language => $language_values) {
+        // delta
+        foreach ($language_values as $delta => $delta_values) {
+          // type
+          foreach ($delta_values as $type => $value) {
+            $node->$field[$language][$delta][$type] = $value;
+          }
+        }
+      }
+    }
+  }
+
   node_object_prepare($new_node);
   node_save($new_node);
 }
