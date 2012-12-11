@@ -57,15 +57,20 @@ function baseline_build_nodes($nodes) {
  */
 function baseline_build_menus($menus) {
   foreach ($menus as $menu_info) {
+    $menu_fields = array(
+      'menu_name'   => $menu_info['menu_name'],
+      'title'       => $menu_info['title'],
+      'description' => $menu_info['description'],
+    );
+    if ($menu_info['language'] && $menu_info['language'] != LANGUAGE_NONE) {
+      $menu_fields['language'] = $menu_info['language'];
+    }
+    if ($menu_fields['i18n_mode']) {
+      $menu_fields['i18n_mode'] = $menu_info['i18n_mode'];
+    }
     $query = db_merge('menu_custom')
                 ->key(array('menu_name' => $menu_info['menu_name']))
-                ->fields(array(
-                    'menu_name'   => $menu_info['menu_name'],
-                    'title'       => $menu_info['title'],
-                    'description' => $menu_info['description'],
-                    'language'    => $menu_info['language'],
-                    'i18n_mode'   => $menu_info['i18n_mode'],
-                 ))
+                ->fields($menu_fields)
                 ->execute();
   }
 }
