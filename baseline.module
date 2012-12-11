@@ -188,7 +188,7 @@ function baseline_api_create_node($node) {
         foreach ($language_values as $delta => $delta_values) {
           // type
           foreach ($delta_values as $type => $value) {
-            $node->$field[$language][$delta][$type] = $value;
+            $node->{$field}[$language][$delta][$type] = $value;
           }
         }
       }
