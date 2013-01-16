@@ -179,7 +179,14 @@ function baseline_build_user_permissions($roles) {
  */
 function baseline_build_nodequeues($nodequeues) {
   foreach ($nodequeues as $nodequeue) {
-    $nodequeue_object = (object) $nodequeue;
-    $qid = nodequeue_save($nodequeue_object);
+    $nodequeue = (object) $nodequeue;
+    // Fetch the nodequeue if it already exists so it can be updated instead of
+    // saved.
+    $existing_nodequeue = nodequeue_load_queue_by_name($nodequeue->name);
+    if (isset($existing_nodequeue->qid)) {
+      $nodequeue->qid = $existing_nodequeue->qid;
+    }
+    // Save the new or updated nodequeue.
+    nodequeue_save($nodequeue);
   }
 }
