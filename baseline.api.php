@@ -99,13 +99,41 @@ function hook_baseline_info_nodes() {
       'title' => 'About us',
       'type' => 'page',
       'language' => 'en',
+      'fields' =>
+          array(
+            'body' =>
+                array(
+                  'und' =>
+                      array(
+                        '0' =>
+                            array(
+                              'value' => 'Body',
+                              'format' => 'full_html'
+                            )
+                      )
+                )
+          )
     ),
     array(
       'nid' => '2',
       'title' => 'Title of the seconde node',
       'type' => 'page',
       'language' => 'nl',
-    )
+      'fields' =>
+          array(
+            'body' =>
+                array(
+                  'und' =>
+                      array(
+                        '0' =>
+                            array(
+                              'value' => 'Body',
+                              'format' => 'full_html',
+                            )
+                      )
+                )
+          )
+      )
   );
 }
 
