@@ -190,3 +190,50 @@ function baseline_build_nodequeues($nodequeues) {
     nodequeue_save($nodequeue);
   }
 }
+
+/**
+ * Creates or updates taxonomy vocabularies.
+ *
+ * @param array $vocabularies
+ *   An array of vocabularies. See the return value of
+ *   hook_baseline_info_taxonomy_vocabularies().
+ */
+function baseline_build_taxonomy_vocabularies($vocabularies) {
+  $existing = taxonomy_vocabulary_get_names();
+  foreach ($vocabularies as $machine_name => $vocabulary) {
+    $vocabulary = (object) $vocabulary;
+    $vocabulary->machine_name = $machine_name;
+    // Check if the vocabulary doesn't already exist so we can update it.
+    if (isset($existing[$machine_name])) {
+      $vocabulary->vid = $existing[$machine_name]->vid;
+    }
+    taxonomy_vocabulary_save($vocabulary);
+  }
+}
+
+/**
+ * Creates or updates taxonomy terms.
+ *
+ * @param array $terms
+ *   An array of terms. See the return value of
+ *   hook_baseline_info_taxonomy_terms().
+ */
+function baseline_build_taxonomy_terms($terms) {
+  $vocabularies = taxonomy_vocabulary_get_names();
+  foreach ($terms as $term) {
+    $term = (object) $term;
+    // Only save the term if it has an existing vocabulary.
+    if (isset($term->vocabulary) && isset($vocabularies[$term->vocabulary])) {
+      $term->vid = $vocabularies[$term->vocabulary]->vid;
+      // Check if a term with the same name in the vocabulary already exists.
+      $existing = taxonomy_get_term_by_name($term->name, $term->vocabulary);
+      if (!empty($existing)) {
+        $first = array_shift($existing);
+        $term->tid = $first->tid;
+      }
+      // Remove the vocabulary property because it's not saved to the db.
+      unset($term->vocabulary);
+      taxonomy_term_save($term);
+    }
+  }
+}

@@ -466,3 +466,77 @@ function hook_baseline_info_nodequeues() {
 
   return $nodequeues;
 }
+
+/**
+ * Define taxonomy vocabularies.
+ *
+ * @return array
+ *   An array of taxonomy vocabulary arrays, keyed by machine name witht the
+ *   following keys:
+ *   - name: The human readable name of the vocabulary.
+ *   - description: The description of the vocabulary (optional).
+ *   - module: The module that created the vocabulary (optional, defaults to
+ *     taxonomy).
+ *   - weight: The position where the vocabulary is displayed in forms (optional,
+ *     defaults to 0).
+ */
+function hook_baseline_info_taxonomy_vocabularies() {
+  return array(
+    'section' => array(
+      'name' => 'Section',
+      'description' => 'The section where the content should be aggregated.',
+    ),
+    'search_group' => array(
+      'name' => 'Search Group',
+      'description' => 'The taxonomy to group search results by.',
+    ),
+  );
+}
+
+/**
+ * Define taxonomy terms.
+ *
+ * Note that this will update terms if a term with the exact same name exists
+ * in the vocabulary.
+ *
+ * @return array
+ *   An array of taxonomy term arrays, each having the following keys:
+ *   - name: The human readable name of the term.
+ *   - vocabulary: The machine name of the vocabulary the term belongs to.
+ *   - description: The description of the term (optional).
+ *   - format: The format of the description (optional).
+ *   - weight: The order in which the term appears (optional, defaults to 0).
+ *   - parent: The term name of the parent (optional).
+ *
+ * @todo Add support for updating term names (e.g. an extra key with the current
+ *   term name).
+ * @todo Add support for hierarchy.
+ */
+function hook_baseline_info_taxonomy_terms() {
+  return array(
+    array(
+      'name' => 'News',
+      'vocabulary' => 'section',
+    ),
+    array(
+      'name' => 'Resources',
+      'vocabulary' => 'section',
+    ),
+    array(
+      'name' => 'Articles',
+      'vocabulary' => 'search_group',
+    ),
+    array(
+      'name' => 'Resources',
+      'vocabulary' => 'search_group',
+    ),
+    array(
+      'name' => 'Videos',
+      'vocabulary' => 'search_group',
+    ),
+    array(
+      'name' => 'Galleries',
+      'vocabulary' => 'search_group',
+    ),
+  );
+}
