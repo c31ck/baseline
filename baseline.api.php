@@ -427,11 +427,12 @@ function hook_baseline_info_user_roles() {
  *   An array of nodequeues, keyed by machine name.
  */
 function hook_baseline_info_nodequeues() {
+  $t = get_t();
   $nodequeues = array(
     'residential_teaser' => array(
-      'title' => st('residential_teaser'),
+      'title' => $t('residential_teaser'),
       'name' => 'residential_teaser',
-      'subqueue_title' => st('residential_teaser'),
+      'subqueue_title' => $t('residential_teaser'),
       'size' => 0,
       'reverse' => 0,
       'link' => '',
@@ -443,12 +444,12 @@ function hook_baseline_info_nodequeues() {
       'show_in_links' => FALSE,
       'show_in_tab' => TRUE,
       'show_in_ui' => TRUE,
-      'add_subqueue' => array(0 => st('residential_teaser')),
+      'add_subqueue' => array(0 => $t('residential_teaser')),
     ),
     'residential_full' => array(
-      'title' => st('residential_full'),
+      'title' => $t('residential_full'),
       'name' => 'residential_full',
-      'subqueue_title' => st('residential_full'),
+      'subqueue_title' => $t('residential_full'),
       'size' => 0,
       'reverse' => 0,
       'link' => '',
@@ -460,7 +461,7 @@ function hook_baseline_info_nodequeues() {
       'show_in_links' => FALSE,
       'show_in_tab' => TRUE,
       'show_in_ui' => TRUE,
-      'add_subqueue' => array(0 => st('residential_full')),
+      'add_subqueue' => array(0 => $t('residential_full')),
     ),
   );
 
