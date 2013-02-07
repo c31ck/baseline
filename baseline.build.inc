@@ -185,11 +185,16 @@ function baseline_build_nodequeues($nodequeues) {
     $existing_nodequeue = nodequeue_load_queue_by_name($nodequeue->name);
     if (isset($existing_nodequeue->qid)) {
       $nodequeue->qid = $existing_nodequeue->qid;
+      // Make sure the subqueues aren't added indefinitely.
+      if (isset($nodequeue->add_subqueue)) {
+        unset($nodequeue->add_subqueue);
+      }
     }
     // Save the new or updated nodequeue.
     nodequeue_save($nodequeue);
   }
 }
+
 
 /**
  * Creates or updates taxonomy vocabularies.
