@@ -62,15 +62,16 @@ function baseline_api_create_path_alias($source, $alias, $langcode) {
  */
 function baseline_api_create_block($block_info) {
   $fields = array(
-    'module'  => $block_info['module'],
-    'delta'   => $block_info['delta'],
-    'theme'   => $block_info['theme'],
-    'status'  => $block_info['status'],
-    'weight'  => $block_info['weight'],
-    'region'  => $block_info['region'],
-    'title'   => $block_info['title'],
-    'pages'   => $block_info['pages'],
-    'cache'   => $block_info['cache'],
+    'module'  		=> $block_info['module'],
+    'delta'   		=> $block_info['delta'],
+    'theme'   		=> $block_info['theme'],
+    'status'  		=> $block_info['status'],
+    'weight'  		=> $block_info['weight'],
+    'region'  		=> $block_info['region'],
+    'title'   		=> $block_info['title'],
+    'visibility' 	=> $block_info['visibility'],
+	'pages'   		=> $block_info['pages'],
+    'cache'   		=> $block_info['cache'],
   );
 
   if (module_exists('i18n_block') && isset($block_info['i18n_mode'])) {
