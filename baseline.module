@@ -287,7 +287,8 @@ function baseline_get_info($type) {
   $hook = "baseline_info_$type";
   $baseline_info = array();
   foreach (module_implements($hook) as $module) {
-    $baseline_info += module_invoke($module, $hook);
+    $module_info = module_invoke($module, $hook);
+    $baseline_info = array_merge($baseline_info, $module_info);
   }
   return $baseline_info;
 }
