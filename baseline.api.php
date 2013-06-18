@@ -192,6 +192,7 @@ function hook_baseline_info_menu_links() {
  *   - format: (optional) A string used for the machine name of the format the
  *     block body is using.
  *   - custom: (optional) Set to TRUE for a custom block.
+ *   - types: (optional) An array of content types for block visbility.
  *
  * @see hook_block_info().
  */
@@ -287,6 +288,7 @@ function hook_baseline_info_blocks() {
       'title' => 'Follow mysitename',
       'pages' => '',
       'cache' => -1,
+      'types' => array('page', 'article'),
     ),
     // Custom blocks
     array(

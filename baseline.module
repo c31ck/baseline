@@ -79,6 +79,23 @@ function baseline_api_create_block($block_info) {
     $fields['i18n_mode'] = $block_info['i18n_mode'];
   }
 
+  // Add content type visibility settings.
+  if (module_exists('node') && !empty($block_info['types'])) {
+    db_delete('block_node_type')
+      ->condition('module', $block_info['module'])
+      ->condition('delta', $block_info['delta'])
+      ->execute();
+    $query = db_insert('block_node_type')->fields(array('type', 'module', 'delta'));
+    foreach (array_filter($block_info['types']) as $type) {
+      $query->values(array(
+        'type' => $type,
+        'module' => $block_info['module'],
+        'delta' => $block_info['delta'],
+      ));
+    }
+    $query->execute();
+  }
+
   $query = db_merge('block')
     ->key(array('module' => $block_info['module'], 'delta' => $block_info['delta'], 'theme' => $block_info['theme']))
     ->fields($fields)
