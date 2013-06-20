@@ -156,11 +156,16 @@ function baseline_build_user_roles($roles) {
 function baseline_build_user_permissions($roles) {
   // Fetch the role ids set up by hook_baseline_info_user_permissions().
   $role_ids = variable_get('baseline_user_role_ids', array());
+  // Get a list of existing permissions.
+  $existing_permissions = array_keys(user_permission_get_modules());
+
   foreach ($roles as $rid => $permissions) {
     // Find out the role id if a machine name was used.
     if (!is_numeric($rid) && isset($role_ids[$rid])) {
       $rid = $role_ids[$rid];
     }
+    // Filter permissions that don't exists.
+    $permissions = array_intersect($permissions, $existing_permissions);
     // Save the permissions for this role..
     user_role_grant_permissions($rid, $permissions);
   }
