@@ -125,10 +125,16 @@ function baseline_build_variables($variables) {
  * @see hook_baseline_info_user_roles().
  */
 function baseline_build_user_roles($roles) {
+  $existing_roles = user_roles(TRUE);
   // Save the role ids so we can save them to a variable.
   $role_id_mapping = array();
   foreach ($roles as $role_name => $role) {
     $role = (object) $role;
+    // If the role exists we update the role.
+    $rid = array_search($role_name, $existing_roles);
+    if ($rid) {
+      $role->rid = $rid;
+    }
     // Save the role to the database.
     user_role_save($role);
     $role_id_mapping[$role_name] = $role->rid;
