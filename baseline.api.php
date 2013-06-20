@@ -367,6 +367,13 @@ function hook_baseline_info_date_types() {
  * This hook runs after hook_info_user_roles(), enabling you to assign
  * permissions to roles defined in that hook.
  *
+ * IMPORTANT:
+ *
+ * Some permissions use IDs instead of machine names. When defining them in the
+ * hook replace the ID by the machine name. On baseline build baseline will
+ * replace the machine name by the ID so permissions can be easily deployed
+ * on other environments.
+ *
  * @return array
  *   An array for each role you want to assign permissions to. The key for each
  *   role can be one of the following:
@@ -389,6 +396,7 @@ function hook_baseline_info_user_permissions() {
     'bypass node access',
     'view own unpublished content',
     'view revisions',
+    'edit terms in tags',
   );
   // Add permissions for the anonymous user role.
   $permissions[DRUPAL_ANONYMOUS_RID] = array(

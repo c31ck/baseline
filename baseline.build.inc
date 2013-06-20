@@ -164,11 +164,50 @@ function baseline_build_user_permissions($roles) {
     if (!is_numeric($rid) && isset($role_ids[$rid])) {
       $rid = $role_ids[$rid];
     }
+    // Replace machine names by their ID within the current environment
+    $permissions = baseline_replace_permission_ids($permissions);
     // Filter permissions that don't exists.
     $permissions = array_intersect($permissions, $existing_permissions);
-    // Save the permissions for this role..
+    // Save the permissions for this role.
     user_role_grant_permissions($rid, $permissions);
   }
+}
+
+/**
+ * Replaces machine names by IDs in permissions.
+ *
+ * @param array $permissions
+ *   An array of permission names.
+ *
+ * @return array
+ *   An array of permissions with the machine names replaced.
+ */
+function baseline_replace_permission_ids($permissions) {
+  // An array of replacement pattern for each entity type. The key is pattern
+  // and the value the ID type (nid, vid, rid, ...).
+  $replacements = array(
+    'delete terms in ' => 'vid',
+    'edit terms in '=> 'vid',
+  );
+
+  foreach ($permissions as $i => $permission) {
+    foreach ($replacements as $pattern => $key_type) {
+      if (strpos($permission, $pattern) === 0) {
+        $machine_name = drupal_substr($permission, drupal_strlen($pattern));
+        $key = $machine_name;
+        // Look for a vocabulary ID.
+        if ($key_type == 'vid') {
+          $vocabulary = taxonomy_vocabulary_machine_name_load($machine_name);
+          if ($vocabulary) {
+            $key = $vocabulary->vid;
+          }
+        }
+        // Rebuild the permission.
+        $permissions[$i] = $pattern . $key;
+      }
+    }
+  }
+  return $permissions;
 }
 
 /**
