@@ -305,7 +305,23 @@ function baseline_get_info($type) {
   $baseline_info = array();
   foreach (module_implements($hook) as $module) {
     $module_info = module_invoke($module, $hook);
-    $baseline_info = array_merge($baseline_info, $module_info);
+    // Check if we should use array_merge or the union operator. If one or more
+    // keys are strings we should use the union operator to preserve keys. If
+    // all keys are numeric we use array_merge so keys are appended.
+    $use_merge = TRUE;
+    foreach (array_keys($module_info) as $key) {
+      if (is_string($key) && !is_numeric($key)) {
+        $use_merge = FALSE;
+        break;
+      }
+    }
+
+    if ($use_merge) {
+      $baseline_info = array_merge($baseline_info, $module_info);
+    }
+    else {
+      $baseline_info += $module_info;
+    }
   }
   return $baseline_info;
 }
