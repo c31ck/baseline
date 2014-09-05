@@ -23,8 +23,10 @@ function baseline_build() {
   baseline_build_date_formats(baseline_get_info('date_formats'));
   baseline_build_date_types(baseline_get_info('date_types'));
   baseline_build_variables(baseline_get_info('variables'));
-  baseline_build_taxonomy_vocabularies(baseline_get_info('taxonomy_vocabularies'));
-  baseline_build_taxonomy_terms(baseline_get_info('taxonomy_terms'));
+  if (module_exists('taxonomy')) {
+    baseline_build_taxonomy_vocabularies(baseline_get_info('taxonomy_vocabularies'));
+    baseline_build_taxonomy_terms(baseline_get_info('taxonomy_terms'));
+  }
   baseline_build_nodes(baseline_get_info('nodes'));
   baseline_build_menus(baseline_get_info('menus'));
   baseline_build_menu_links(baseline_get_info('menu_links'));
