@@ -125,10 +125,16 @@ function baseline_build_variables($variables) {
  * @see hook_baseline_info_user_roles().
  */
 function baseline_build_user_roles($roles) {
+  $existing_roles = user_roles(TRUE);
   // Save the role ids so we can save them to a variable.
   $role_id_mapping = array();
   foreach ($roles as $role_name => $role) {
     $role = (object) $role;
+    // If the role exists we update the role.
+    $rid = array_search($role_name, $existing_roles);
+    if ($rid) {
+      $role->rid = $rid;
+    }
     // Save the role to the database.
     user_role_save($role);
     $role_id_mapping[$role_name] = $role->rid;
@@ -150,14 +156,58 @@ function baseline_build_user_roles($roles) {
 function baseline_build_user_permissions($roles) {
   // Fetch the role ids set up by hook_baseline_info_user_permissions().
   $role_ids = variable_get('baseline_user_role_ids', array());
+  // Get a list of existing permissions.
+  $existing_permissions = array_keys(user_permission_get_modules());
+
   foreach ($roles as $rid => $permissions) {
     // Find out the role id if a machine name was used.
     if (!is_numeric($rid) && isset($role_ids[$rid])) {
       $rid = $role_ids[$rid];
     }
-    // Save the permissions for this role..
+    // Replace machine names by their ID within the current environment
+    $permissions = baseline_replace_permission_ids($permissions);
+    // Filter permissions that don't exists.
+    $permissions = array_intersect($permissions, $existing_permissions);
+    // Save the permissions for this role.
     user_role_grant_permissions($rid, $permissions);
   }
+}
+
+/**
+ * Replaces machine names by IDs in permissions.
+ *
+ * @param array $permissions
+ *   An array of permission names.
+ *
+ * @return array
+ *   An array of permissions with the machine names replaced.
+ */
+function baseline_replace_permission_ids($permissions) {
+  // An array of replacement pattern for each entity type. The key is pattern
+  // and the value the ID type (nid, vid, rid, ...).
+  $replacements = array(
+    'delete terms in ' => 'vid',
+    'edit terms in '=> 'vid',
+  );
+
+  foreach ($permissions as $i => $permission) {
+    foreach ($replacements as $pattern => $key_type) {
+      if (strpos($permission, $pattern) === 0) {
+        $machine_name = drupal_substr($permission, drupal_strlen($pattern));
+        $key = $machine_name;
+        // Look for a vocabulary ID.
+        if ($key_type == 'vid') {
+          $vocabulary = taxonomy_vocabulary_machine_name_load($machine_name);
+          if ($vocabulary) {
+            $key = $vocabulary->vid;
+          }
+        }
+        // Rebuild the permission.
+        $permissions[$i] = $pattern . $key;
+      }
+    }
+  }
+  return $permissions;
 }
 
 /**

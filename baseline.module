@@ -23,8 +23,10 @@ function baseline_build() {
   baseline_build_date_formats(baseline_get_info('date_formats'));
   baseline_build_date_types(baseline_get_info('date_types'));
   baseline_build_variables(baseline_get_info('variables'));
-  baseline_build_taxonomy_vocabularies(baseline_get_info('taxonomy_vocabularies'));
-  baseline_build_taxonomy_terms(baseline_get_info('taxonomy_terms'));
+  if (module_exists('taxonomy')) {
+    baseline_build_taxonomy_vocabularies(baseline_get_info('taxonomy_vocabularies'));
+    baseline_build_taxonomy_terms(baseline_get_info('taxonomy_terms'));
+  }
   baseline_build_nodes(baseline_get_info('nodes'));
   baseline_build_menus(baseline_get_info('menus'));
   baseline_build_menu_links(baseline_get_info('menu_links'));
@@ -77,6 +79,23 @@ function baseline_api_create_block($block_info) {
 
   if (module_exists('i18n_block') && isset($block_info['i18n_mode'])) {
     $fields['i18n_mode'] = $block_info['i18n_mode'];
+  }
+
+  // Add content type visibility settings.
+  if (module_exists('node') && !empty($block_info['types'])) {
+    db_delete('block_node_type')
+      ->condition('module', $block_info['module'])
+      ->condition('delta', $block_info['delta'])
+      ->execute();
+    $query = db_insert('block_node_type')->fields(array('type', 'module', 'delta'));
+    foreach (array_filter($block_info['types']) as $type) {
+      $query->values(array(
+        'type' => $type,
+        'module' => $block_info['module'],
+        'delta' => $block_info['delta'],
+      ));
+    }
+    $query->execute();
   }
 
   $query = db_merge('block')
@@ -287,7 +306,24 @@ function baseline_get_info($type) {
   $hook = "baseline_info_$type";
   $baseline_info = array();
   foreach (module_implements($hook) as $module) {
-    $baseline_info += module_invoke($module, $hook);
+    $module_info = module_invoke($module, $hook);
+    // Check if we should use array_merge or the union operator. If one or more
+    // keys are strings we should use the union operator to preserve keys. If
+    // all keys are numeric we use array_merge so keys are appended.
+    $use_merge = TRUE;
+    foreach (array_keys($module_info) as $key) {
+      if (is_string($key) && !is_numeric($key)) {
+        $use_merge = FALSE;
+        break;
+      }
+    }
+
+    if ($use_merge) {
+      $baseline_info = array_merge($baseline_info, $module_info);
+    }
+    else {
+      $baseline_info += $module_info;
+    }
   }
   return $baseline_info;
 }
